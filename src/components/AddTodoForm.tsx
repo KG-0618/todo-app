@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,8 @@ interface AddTodoFormProps {
 
 export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
   const [title, setTitle] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +24,10 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
     }
   };
 
-  const handleAddClick = () => {
+  const handleAddClick = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     const trimmedTitle = title.trim();
     if (trimmedTitle) {
       onAdd(trimmedTitle);
@@ -30,6 +35,22 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
       onCancel();
     }
   };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleAddClick(e);
+  };
+
+  // モバイル環境でのフォーカス処理を改善
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -54,14 +75,18 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
+            ref={inputRef}
             type="text"
             placeholder="ToDoのタイトルを入力..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             maxLength={100}
-            autoFocus
             className="text-base"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck="false"
           />
           
           <div className="flex gap-2 justify-end">
@@ -73,9 +98,13 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
               キャンセル
             </Button>
             <Button
+              ref={addButtonRef}
               type="button"
               onClick={handleAddClick}
+              onTouchEnd={handleTouchEnd}
               disabled={!title.trim()}
+              className="min-h-[44px] min-w-[44px] touch-manipulation"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               追加
             </Button>
