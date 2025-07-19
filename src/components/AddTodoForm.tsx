@@ -14,8 +14,18 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (title.trim()) {
-      onAdd(title);
+    const trimmedTitle = title.trim();
+    if (trimmedTitle) {
+      onAdd(trimmedTitle);
+      setTitle('');
+      onCancel();
+    }
+  };
+
+  const handleAddClick = () => {
+    const trimmedTitle = title.trim();
+    if (trimmedTitle) {
+      onAdd(trimmedTitle);
       setTitle('');
       onCancel();
     }
@@ -63,7 +73,8 @@ export const AddTodoForm = ({ onAdd, onCancel }: AddTodoFormProps) => {
               キャンセル
             </Button>
             <Button
-              type="submit"
+              type="button"
+              onClick={handleAddClick}
               disabled={!title.trim()}
             >
               追加
